@@ -31,10 +31,6 @@
 
         var trips = session.generate(3, 2, 6);
 
-        //var nonIdenticalPermutation = CombinatoricsEx.permute([1, 2, 3, 4]);
-        //var identicalPermutation = CombinatoricsEx.permute([0, 0, 1, 2]);
-        //var grouping = CombinatoricsEx.group([10, 20, 30, 40, 50, 60], 2, 2);
-
         var list = document.createElement('ol');
         trips.forEach(trip => {
             list.innerHTML += "<li>" + trip.toString() + "</li>";
@@ -59,6 +55,7 @@
             var rower = <Person>x;
             tableHtml += "<td>" + rower.name + "</td>";
         });
+
         tableHtml += "</tr>";
 
         coxes.forEach(x => {
@@ -91,12 +88,6 @@
         coxRowerTable.innerHTML = tableHtml;
 
         this.span.appendChild(coxRowerTable);
-
-        //var c = Combinatorics.C(10, 3);
-        //var p = Combinatorics.P(4, 2);
-        //var permutationGenerator = Combinatorics.permutation(session.participants, 2);
-        //var count = permutationGenerator.length;
-        //var first = permutationGenerator.next();
     }
 
     start() {

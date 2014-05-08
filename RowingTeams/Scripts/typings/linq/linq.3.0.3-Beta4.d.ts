@@ -190,6 +190,9 @@ declare module linqjs {
     interface Grouping extends Enumerable {
         key(): any;
     }
+
+    interface IEnumerable<T> {
+    }
 }
 
 // export definition

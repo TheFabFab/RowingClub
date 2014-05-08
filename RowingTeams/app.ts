@@ -32,52 +32,54 @@ class Session {
 
         if (coxes.count() < numOfBoats) throw "Not enough coxes for the number of boats.";
 
-        var possibleTripCount = 0;
+        var coxPoints = new Array();
+        coxes.forEach(cox => coxPoints[cox] = 0);
 
-        Combinatorics.combination(coxes.toArray(), numOfBoats).forEach(selectedCoxes => {
-            var availableRowers = rowers.except(selectedCoxes).toArray();
+        var rowerPoints = new Array();
+        rowers.forEach(rower => rowerPoints[rower] = 0);
 
-            if (availableRowers.length >= rowersPerBoat * numOfBoats) {
-                CombinatoricsEx.group(availableRowers, numOfBoats, rowersPerBoat).forEach(rowerGrouping => {
-                    console.assert(rowerGrouping.length == selectedCoxes.length);
-
-                    possibleTripCount++;
-                });
-            }
+        var coxMatrix = new Array();
+        coxes.forEach(cox => {
+            coxMatrix[cox] = new Array();
+            rowers.forEach(rowers => coxMatrix[cox][rowers] = 0);
         });
 
-        var tripIndex = 0;
         var trips = [];
+        var coxesSeeded = coxes;
 
-        var selectedTripIndices = Enumerable
-            .range(1, numOfTrips, possibleTripCount / (numOfTrips - 1))
-            .select(x => Math.floor(x))
-            .select(x => x - 1 < possibleTripCount - 1 ? x - 1 : possibleTripCount - 1);
+        while (trips.length < numOfTrips) {
+            var selectedCoxes =
+                Enumerable.from(
+                    coxesSeeded
+                    .orderBy(cox => coxPoints[cox])
+                    .take(numOfBoats)
+                        .toArray());
 
-        Combinatorics.combination(coxes.toArray(), numOfBoats).forEach(selectedCoxes => {
-            var availableRowers = rowers.except(selectedCoxes).toArray();
+            var alreadyInTrip = selectedCoxes;
 
-            if (availableRowers.length >= rowersPerBoat * numOfBoats) {
-                CombinatoricsEx.group(availableRowers, numOfBoats, rowersPerBoat).forEach(rowerGrouping => {
-                    console.assert(rowerGrouping.length == selectedCoxes.length);
+            var boats = selectedCoxes.select(cox => {
+                coxPoints[cox]++;
 
-                    if (selectedTripIndices.contains(tripIndex)) {
-                        var boats = [];
+                var selectedRowers =
+                    rowers
+                    .except(alreadyInTrip)
+                    .orderBy(rower => coxMatrix[cox][rower])
+                    .thenBy(rower => rowerPoints[rower])
+                    .take(rowersPerBoat)
+                    .toArray();
 
-                        selectedCoxes.forEach((y, idx) => {
-                            var cox = <Person>y;
-                            var rowers = rowerGrouping[idx];
-                            var boat = new Boat(cox, rowers);
-                            boats.push(boat);
-                        });
-
-                        trips.push(new Trip(boats));
-                    }
-
-                    tripIndex++;
+                selectedRowers.forEach(rower => {
+                    rowerPoints[rower] = rowerPoints[rower] + 1;
+                    coxMatrix[cox][rower] = coxMatrix[cox][rower] + 1;
                 });
-            }
-        });
+
+                alreadyInTrip = alreadyInTrip.concat(selectedRowers);
+
+                return new Boat(cox, selectedRowers);
+            }).toArray();
+
+            trips.push(new Trip(boats));
+        }
 
         return trips;
     }
