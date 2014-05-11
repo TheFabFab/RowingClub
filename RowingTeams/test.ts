@@ -1,23 +1,31 @@
 ﻿class Tester {
     element: HTMLElement;
     span: HTMLElement;
+    counter: HTMLElement;
+    _session: Session;
+    _bestSchedule: Schedule;
+    _timerToken: number;
+    _iterationCount: number;
 
     constructor(element: HTMLElement) {
         this.element = element;
+        this.counter = document.createElement('span');
+        this.element.appendChild(this.counter);
         this.span = document.createElement('span');
         this.element.appendChild(this.span);
+        this._iterationCount = 0;
+        this._timerToken = 0;
+        this._session = new Session();
 
-        var session = new Session();
-
-        session.participants.push(new Person("A", true, true));
-        session.participants.push(new Person("B", true, true));
-        session.participants.push(new Person("C", true, true));
-        session.participants.push(new Person("D", true, true));
-        session.participants.push(new Person("E", true, true));
-        session.participants.push(new Person("F", false, true));
-        session.participants.push(new Person("G", false, true));
-        session.participants.push(new Person("H", false, true));
-        session.participants.push(new Person("I", false, true));
+        this._session.participants.push(new Person("A", true, true));
+        this._session.participants.push(new Person("B", true, true));
+        this._session.participants.push(new Person("C", true, true));
+        this._session.participants.push(new Person("D", true, true));
+        this._session.participants.push(new Person("E", true, true));
+        this._session.participants.push(new Person("F", true, true));
+        //this._session.participants.push(new Person("G", false, true));
+        //this._session.participants.push(new Person("H", false, true));
+        //this._session.participants.push(new Person("I", false, true));
 
         //session.participants.push(new Person("Michael", true, true));
         //session.participants.push(new Person("Annette", false, true));
@@ -29,7 +37,41 @@
         //session.participants.push(new Person("Klaus", true, true));
         //session.participants.push(new Person("Amin", true, true));
 
-        var trips = session.generate(3, 2, 6);
+        this._bestSchedule = null;
+    }
+
+    start() {
+        this.generateNextSchedule();
+    }
+
+    stop() {
+    }
+
+    generateNextSchedule() {
+        if (this._timerToken > 0) {
+            clearTimeout(this._timerToken);
+            this._timerToken = 0;
+        }
+
+        var schedule = this._session.generate(2, 2, 16);
+        this._iterationCount++;
+
+        this.counter.innerHTML = "<p>Schedules generated: " + this._iterationCount + "</p>";
+
+        if (this._bestSchedule == null || schedule.standardDeviation < this._bestSchedule.standardDeviation) {
+            this._bestSchedule = schedule;
+            this.display(this._bestSchedule);
+        }
+
+        this._timerToken = setInterval(() => this.generateNextSchedule());
+    }
+
+    display(schedule: Schedule) {
+        this.span.innerHTML = "";
+
+        this.span.innerHTML = "<p>Current deviation: " + schedule.standardDeviation + "</p>";
+
+        var trips = schedule.trips;
 
         var list = document.createElement('ol');
         trips.forEach(trip => {
@@ -39,12 +81,12 @@
         this.span.appendChild(list);
 
         var coxes = Enumerable
-            .from(session.participants)
+            .from(schedule.participants)
             .where(p => (<Person>p).canBeCox)
             .toArray();
 
         var rowers = Enumerable
-            .from(session.participants)
+            .from(schedule.participants)
             .where(p => (<Person>p).canBeRower)
             .toArray();
 
@@ -89,13 +131,6 @@
 
         this.span.appendChild(coxRowerTable);
     }
-
-    start() {
-    }
-
-    stop() {
-    }
-
 }
 
 window.onload = () => {

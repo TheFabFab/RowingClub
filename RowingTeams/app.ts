@@ -1,6 +1,55 @@
 ﻿/// <reference path="Scripts/typings/linq/linq.3.0.3-Beta4.d.ts" />
 /// <reference path="Scripts/typings/combinatorics/combinatorics.d.ts" />
 
+class Schedule {
+    private _trips: Trip[];
+    private _participants: Person[];
+    private _standardDeviation: Number;
+
+    constructor(participants: Person[], trips: Trip[]) {
+        this._participants = participants;
+        this._trips = trips;
+
+        var coxes =
+            Enumerable.from(this._participants)
+                .where(x => (<Person>x).canBeCox);
+
+        var rowers =
+            Enumerable.from(this._participants)
+                .where(x => (<Person>x).canBeRower);
+
+        var values = Enumerable
+            .from(coxes)
+            .selectMany(cox => Enumerable.from(rowers).select(rower => ({
+                cox: cox,
+                rower: rower,
+                value: Enumerable
+                    .from(trips)
+                    .selectMany(t => (<Trip>t).Boats)
+                    .where(b => Enumerable.from((<Boat>b).rowers).any(r => r === rower))
+                    .where(b => (<Boat>b).cox === cox)
+                    .count()
+            })))
+            .where(stat => stat.cox !== stat.rower)
+            .toArray();
+
+        var average = Enumerable.from(values).average(x => x.value);
+        this._standardDeviation = Enumerable.from(values).sum(x => (x.value - average) * (x.value - average));
+    }
+
+    get trips(): Trip[] {
+        return this._trips;
+    }
+
+    get participants(): Person[]{
+        return this._participants;
+    }
+
+    get standardDeviation(): Number {
+        return this._standardDeviation;
+    }
+}
+
 class Session {
     private _participants: Person[];
 
@@ -17,7 +66,7 @@ class Session {
         return this._participants;
     }
 
-    generate(numOfBoats: number, rowersPerBoat: number, numOfTrips: number): Trip[] {
+    generate(numOfBoats: number, rowersPerBoat: number, numOfTrips: number): Schedule {
         var participants =
             Enumerable
                 .from(this._participants);
@@ -48,11 +97,13 @@ class Session {
         var coxesSeeded = coxes;
 
         while (trips.length < numOfTrips) {
+
             var selectedCoxes =
                 Enumerable.from(
                     coxesSeeded
-                    .orderBy(cox => coxPoints[cox])
-                    .take(numOfBoats)
+                        .shuffle()
+                        .orderBy(cox => coxPoints[cox])
+                        .take(numOfBoats)
                         .toArray());
 
             var alreadyInTrip = selectedCoxes;
@@ -62,11 +113,10 @@ class Session {
 
                 var selectedRowers =
                     rowers
-                    .except(alreadyInTrip)
-                    .orderBy(rower => coxMatrix[cox][rower])
-                    .thenBy(rower => rowerPoints[rower])
-                    .take(rowersPerBoat)
-                    .toArray();
+                        .shuffle()
+                        .except(alreadyInTrip)
+                        .take(rowersPerBoat)
+                        .toArray();
 
                 selectedRowers.forEach(rower => {
                     rowerPoints[rower] = rowerPoints[rower] + 1;
@@ -81,7 +131,7 @@ class Session {
             trips.push(new Trip(boats));
         }
 
-        return trips;
+        return new Schedule(this.participants, trips);
     }
 }
 
