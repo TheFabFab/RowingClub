@@ -1,12 +1,26 @@
 ﻿/// <reference path="Scripts/typings/linq/linq.3.0.3-Beta4.d.ts" />
 /// <reference path="Scripts/typings/combinatorics/combinatorics.d.ts" />
+/// <reference path="Scripts/typings/raphael/raphael.d.ts" />
 
 class Schedule {
     private _trips: Trip[];
     private _participants: Person[];
-    private _standardDeviation: Number;
+    private _average: number;
+    private _standardDeviation: number;
+    private _colorTable: string[];
+    private _valueMatrix: number[][];
 
     constructor(participants: Person[], trips: Trip[]) {
+        this._colorTable = [];
+        this._colorTable[0] = "#FFFFFF";
+        this._colorTable[1] = "#FFDADA";
+        this._colorTable[2] = "#FFB3B3";
+        this._colorTable[3] = "#FF9A9A";
+        this._colorTable[4] = "#FF8080";
+        this._colorTable[5] = "#FF6666";
+        this._colorTable[6] = "#FF3333";
+        this._colorTable[7] = "#FF0000";
+
         this._participants = participants;
         this._trips = trips;
 
@@ -18,22 +32,31 @@ class Schedule {
             Enumerable.from(this._participants)
                 .where(x => (<Person>x).canBeRower);
 
+        this._valueMatrix = new Array();
+        coxes.forEach(cox => {
+            this._valueMatrix[cox] = new Array();
+            rowers.forEach(rower => {
+                this._valueMatrix[cox][rower] = Enumerable
+                    .from(trips)
+                    .selectMany(t => (<Trip>t).Boats)
+                    .where(b => Enumerable.from((<Boat>b).rowers).any(r => r === rower))
+                    .where(b => (<Boat>b).cox === cox)
+                    .count();
+            });
+        });
+
         var values = Enumerable
             .from(coxes)
             .selectMany(cox => Enumerable.from(rowers).select(rower => ({
                 cox: cox,
                 rower: rower,
-                value: Enumerable
-                    .from(trips)
-                    .selectMany(t => (<Trip>t).Boats)
-                    .where(b => Enumerable.from((<Boat>b).rowers).any(r => r === rower))
-                    .where(b => (<Boat>b).cox === cox)
-                    .count()
+                value: this._valueMatrix[cox][rower]
             })))
             .where(stat => stat.cox !== stat.rower)
             .toArray();
 
-        var average = Enumerable.from(values).average(x => x.value);
+        var average = this._average = Enumerable.from(values).average(x => x.value);
+
         this._standardDeviation = Enumerable.from(values).sum(x => (x.value - average) * (x.value - average));
     }
 
@@ -41,12 +64,48 @@ class Schedule {
         return this._trips;
     }
 
-    get participants(): Person[]{
+    get participants(): Person[] {
         return this._participants;
     }
 
     get standardDeviation(): Number {
         return this._standardDeviation;
+    }
+
+    public drawDistributionMap(container: HTMLElement) {
+        var coxes =
+            Enumerable.from(this._participants)
+                .where(x => (<Person>x).canBeCox);
+
+        var rowers =
+            Enumerable.from(this._participants)
+                .where(x => (<Person>x).canBeRower);
+
+        var average = this._average;
+
+        container.innerHTML = "";
+        var W = 40;
+        var paper = Raphael(container, rowers.count() * W, coxes.count() * W);
+        paper.setViewBox(0, 0, rowers.count() * W, coxes.count() * W, true);
+        coxes.forEach((cox, coxIndex) => {
+            rowers.forEach((rower, rowerIndex) => {
+                var rect = paper.rect(rowerIndex * W, coxIndex * W, W, W);
+                if (cox === rower) {
+                    rect.attr("fill", "#888888");
+                    rect.attr("stroke-width", "0px");
+                    rect.attr("stroke", "#FFFFFF");
+                } else {
+                    var deviation = Math.round(Math.min(7.0, Math.abs(average - this._valueMatrix[cox][rower])));
+                    rect.attr("fill", this._colorTable[deviation]);
+                    rect.attr("stroke-width", "0px");
+                    rect.attr("stroke", "#FFFFFF");
+                }
+            });
+        });
+
+        var child = <HTMLElement>container.firstElementChild;
+        child.setAttribute("width", "100%");
+        child.setAttribute("height", "100%");
     }
 }
 
@@ -90,7 +149,7 @@ class Session {
         var coxMatrix = new Array();
         coxes.forEach(cox => {
             coxMatrix[cox] = new Array();
-            rowers.forEach(rowers => coxMatrix[cox][rowers] = 0);
+            rowers.forEach(rower => coxMatrix[cox][rower] = 0);
         });
 
         var trips = [];

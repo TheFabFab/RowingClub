@@ -5,7 +5,14 @@
     <meta charset="utf-8" />
     <title>Trips</title>
     <link rel="stylesheet" href="app.css" type="text/css" />
+    <link href="http://cdn.kendostatic.com/2014.1.416/styles/kendo.common.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.416/styles/kendo.default.min.css" rel="stylesheet" />
+    <link href="http://cdn.kendostatic.com/2014.1.416/styles/kendo.mobile.all.min.css" rel="stylesheet" />
+    <script src="http://cdn.kendostatic.com/2014.1.416/js/jquery.min.js"></script>
+<!--    <script src="http://cdn.kendostatic.com/2014.1.416/js/kendo.ui.core.min.js"></script> -->
+    <script src="Scripts/kendo.ui.core.js"></script>
     <script src="Scripts/linq.min.js"></script>
+    <script src="Scripts/raphael-min.js"></script>
     <script src="app.js"></script>
     <script src="combinatorics.js"></script>
     <script src="test.js"></script>
@@ -17,8 +24,112 @@
     </style>
 </head>
 <body>
-    <h1>Rowing club trips</h1>
+    <div data-role="view" id="show-calculation" data-title="Calculating optimal distribution" data-before-hide="beforeHideCalculation" data-after-show="afterShowCalculation">
+        <div data-role="header">
+            <div data-role="navbar">
+                <span data-role="view-title"></span>
+            </div>
+        </div>
+        <ul data-role="listview" data-style="inset">
+            <li>
+                <label>Generated<input type="number" id="generated-count" readonly="true" /></label>
+            </li>
+            <li>
+                <label>Deviation<input type="number" id="deviation-value" readonly="true" /></label>
+            </li>
+            <li id="heat-map"></li>
+            <li>
+                <div style="text-align: center">
+                    <a data-role="button" data-icon="action" href="#show-results">Continue</a>
+                </div>
+            </li>
+        </ul>
+        <div id="content"></div>
+    </div>
 
-    <div id="content"></div>
+    <div data-role="view" id="show-results" data-title="Calculated trips" data-after-show="afterShowResults">
+        <div data-role="header">
+            <div data-role="navbar">
+                <span data-role="view-title"></span>
+            </div>
+        </div>
+        <ul data-role="listview" data-style="inset" id="result-list-view" data-type="group">
+            <li>Trip #1
+                <ul>
+                    <li>
+                        Boat A
+                        <ul>
+                            <li>Michael
+                            <li>Annette</li>
+                            <li>Janet</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <style>
+        .km-ios #listview-home .km-content {
+            background: url(../../content/shared/images/patterns/pattern2.png);
+            box-shadow: inset 0 0 30px #95764D;
+            -webkit-box-shadow: inset 0 0 30px #95764D;
+        }
+        .km-ios #listview-home .km-listview .km-list {
+            border-radius: 10px;
+            -webkit-border-radius: 10px;
+            box-shadow: 0 1px 5px #95764D;
+            -webkit-box-shadow: 0 1px 5px #95764D;
+        }
+        .km-ios #listview-home .km-listview .km-list > li {
+            border: none;
+        }
+        .km-ios #listview-home .km-listview .km-list > li:last-child {
+            -webkit-box-shadow: none;
+            box-shadow: none;
+        }
+        .km-ios #listview-home .km-navbar {
+            background: url(../../content/shared/images/patterns/pattern9.png);
+        }
+        .km-tablet .km-ios #listview-home .km-view-title {
+            color: #fff;
+            text-shadow: 0 -1px rgba(0,0,0,.5);
+        }
+        .km-ios #listview-home .km-navbar .km-button
+        {
+            background-color: #974d2e;
+        }
+    </style>
+
+    <script>
+        var app = null;
+        var calculation = null;
+
+        window.onload = function() {
+            var el = document.getElementById('content');
+
+            if (el !== null) {
+                calculation = new Tester(el);
+            }
+
+            app = new kendo.mobile.Application(document.body, { initial: "#show-calculation" });
+        };  
+
+        function beforeHideCalculation() {
+            calculation.stop();
+        }
+
+        function afterShowCalculation() {
+            calculation.start();
+        }
+
+        function afterShowResults() {
+            var element = document.getElementById("result-list-view");
+            if (element != null) {
+                //calculation.showResults(element);
+                $(element).kendoListView();
+            }
+        }
+    </script>
 </body>
 </html>
