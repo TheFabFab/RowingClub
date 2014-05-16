@@ -53,21 +53,39 @@
                 <span data-role="view-title"></span>
             </div>
         </div>
-        <ul data-role="listview" data-style="inset" id="result-list-view" data-type="group">
-            <li>Trip #1
-                <ul>
-                    <li>
-                        Boat A
-                        <ul>
-                            <li>Michael
-                            <li>Annette</li>
-                            <li>Janet</li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ul>
+        <ul id="result-list-view" data-type="group" data-style="inset"></ul>
     </div>
+
+    <script>
+        var app = null;
+        var calculation = null;
+
+        window.onload = function() {
+            var el = document.getElementById('content');
+
+            if (el !== null) {
+                calculation = new Tester(el);
+            }
+
+            app = new kendo.mobile.Application(document.body, { initial: "#show-calculation" });
+        };  
+
+        function beforeHideCalculation() {
+            calculation.stop();
+        }
+
+        function afterShowCalculation() {
+            calculation.start();
+        }
+
+        function afterShowResults() {
+            var element = document.getElementById("result-list-view");
+            if (element != null) {
+                calculation.showResults(element);
+                $(element).kendoMobileListView({});
+            }
+        }
+    </script>
 
     <style>
         .km-ios #listview-home .km-content {
@@ -100,36 +118,5 @@
             background-color: #974d2e;
         }
     </style>
-
-    <script>
-        var app = null;
-        var calculation = null;
-
-        window.onload = function() {
-            var el = document.getElementById('content');
-
-            if (el !== null) {
-                calculation = new Tester(el);
-            }
-
-            app = new kendo.mobile.Application(document.body, { initial: "#show-calculation" });
-        };  
-
-        function beforeHideCalculation() {
-            calculation.stop();
-        }
-
-        function afterShowCalculation() {
-            calculation.start();
-        }
-
-        function afterShowResults() {
-            var element = document.getElementById("result-list-view");
-            if (element != null) {
-                //calculation.showResults(element);
-                $(element).kendoListView();
-            }
-        }
-    </script>
 </body>
 </html>
