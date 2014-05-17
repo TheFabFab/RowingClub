@@ -19,10 +19,8 @@
   <ItemGroup>
     <Content Include="app.css" />
     <Content Include="combinatorics.js" />
-    <Content Include="index.html" />
     <Content Include="Scripts\kendo.ui.core.min.js.map" />
     <None Include="Scripts\linq-vsdoc.js" />
-    <TypeScriptCompile Include="index.ts" />
     <Content Include="Scripts\kendo.ui.core.js" />
     <Content Include="Scripts\kendo.ui.core.min.js" />
     <Content Include="Scripts\linq.d.ts" />
@@ -40,6 +38,7 @@
     <TypeScriptCompile Include="Scripts\typings\raphael\raphael.d.ts" />
     <Content Include="test.html" />
     <TypeScriptCompile Include="test.ts" />
+    <Content Include="ui.js" />
     <Content Include="web.config" />
   </ItemGroup>
   <ItemGroup>

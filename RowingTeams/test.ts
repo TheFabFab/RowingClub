@@ -1,10 +1,11 @@
 ﻿class Tester {
-    element: HTMLElement;
-    span: HTMLElement;
-
     _generatedCount: HTMLInputElement;
     _deviationValue: HTMLInputElement;
     _heatMap: HTMLElement;
+
+    private _numOfBoats: number;
+    private _rowersPerBoat: number;
+    private _numOfTrips: number;
 
     _session: Session;
     _bestSchedule: Schedule;
@@ -12,37 +13,22 @@
     _iterationCount: number;
     _stopRequested: boolean;
 
-    constructor(element: HTMLElement) {
+    constructor(participants: Array<any>, numOfBoats: number, rowersPerBoat: number, numOfTrips: number) {
+        this._numOfBoats = numOfBoats;
+        this._numOfTrips = numOfTrips;
+        this._rowersPerBoat = rowersPerBoat;
+
         this._generatedCount = <HTMLInputElement>document.getElementById("generated-count");
         this._deviationValue = <HTMLInputElement>document.getElementById("deviation-value");
         this._heatMap = document.getElementById("heat-map");
 
-        this.element = element;
-        this.span = document.createElement('span');
-        this.element.appendChild(this.span);
         this._iterationCount = 0;
         this._timerToken = 0;
         this._session = new Session();
 
-        //this._session.participants.push(new Person("A", true, true));
-        //this._session.participants.push(new Person("B", true, true));
-        //this._session.participants.push(new Person("C", true, true));
-        //this._session.participants.push(new Person("D", true, true));
-        //this._session.participants.push(new Person("E", true, true));
-        //this._session.participants.push(new Person("F", true, true));
-        //this._session.participants.push(new Person("G", false, true));
-        //this._session.participants.push(new Person("H", false, true));
-        //this._session.participants.push(new Person("I", false, true));
-
-        this._session.participants.push(new Person("Michael", true, true));
-        this._session.participants.push(new Person("Annette", false, true));
-        this._session.participants.push(new Person("Jakob", false, true));
-        this._session.participants.push(new Person("Carsten", true, true));
-        this._session.participants.push(new Person("Mogens", false, true));
-        this._session.participants.push(new Person("Soren", false, true));
-        this._session.participants.push(new Person("Poul", true, true));
-        this._session.participants.push(new Person("Klaus", true, true));
-        this._session.participants.push(new Person("Amin", true, true));
+        participants.forEach(x => {
+            this._session.participants.push(new Person(x.name, x.canBeCox, x.canBeRower));
+        });
 
         this._bestSchedule = null;
     }
@@ -62,7 +48,7 @@
         }
 
         if (!this._stopRequested) {
-            var schedule = this._session.generate(2, 2, 16);
+            var schedule = this._session.generate(this._numOfBoats, this._rowersPerBoat, this._numOfTrips);
             this._iterationCount++;
 
             this._generatedCount.value = this._iterationCount.toString();
@@ -79,70 +65,6 @@
     display(schedule: Schedule) {
         this._deviationValue.value = schedule.standardDeviation.toFixed(2);
         schedule.drawDistributionMap(this._heatMap);
-
-        this.span.innerHTML = "";
-
-        this.span.innerHTML = "<p>Current deviation: " + schedule.standardDeviation + "</p>";
-
-        var trips = schedule.trips;
-
-        var list = document.createElement('ol');
-        trips.forEach(trip => {
-            list.innerHTML += "<li>" + trip.toString() + "</li>";
-        });
-
-        this.span.appendChild(list);
-
-        var coxes = Enumerable
-            .from(schedule.participants)
-            .where(p => (<Person>p).canBeCox)
-            .toArray();
-
-        var rowers = Enumerable
-            .from(schedule.participants)
-            .where(p => (<Person>p).canBeRower)
-            .toArray();
-
-        var coxRowerTable = document.createElement('table');
-
-        var tableHtml = "<tr><td>\</td>";
-        rowers.forEach(x => {
-            var rower = <Person>x;
-            tableHtml += "<td>" + rower.name + "</td>";
-        });
-
-        tableHtml += "</tr>";
-
-        coxes.forEach(x => {
-            var cox = <Person>x;
-
-            var coxCount = Enumerable
-                .from(trips)
-                .selectMany(t => (<Trip>t).Boats)
-                .where(b => (<Boat>b).cox === cox)
-                .count();
-
-            tableHtml += "<tr><td>" + cox.name + "(" + coxCount + "x)</td>";
-
-            rowers.forEach(y => {
-                var rower = <Person>y;
-
-                var count = Enumerable
-                    .from(trips)
-                    .selectMany(t => (<Trip>t).Boats)
-                    .where(b => Enumerable.from((<Boat>b).rowers).any(r => r === rower))
-                    .where(b => (<Boat>b).cox === cox)
-                    .count();
-
-                tableHtml += "<td>" + count + "</td>";
-            });
-
-            tableHtml += "</tr>";
-        });
-
-        coxRowerTable.innerHTML = tableHtml;
-
-        this.span.appendChild(coxRowerTable);
     }
 
     showResults(element: HTMLUListElement) {
