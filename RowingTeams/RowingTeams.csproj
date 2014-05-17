@@ -36,8 +36,8 @@
     <Content Include="Scripts\typings\linq\linq.d.ts" />
     <Content Include="Scripts\typings\linq\linq.jquery.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\raphael\raphael.d.ts" />
-    <Content Include="test.html" />
-    <TypeScriptCompile Include="test.ts" />
+    <Content Include="index.html" />
+    <TypeScriptCompile Include="index.ts" />
     <Content Include="ui.js" />
     <Content Include="web.config" />
   </ItemGroup>

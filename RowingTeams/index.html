@@ -15,7 +15,7 @@
     <script src="Scripts/raphael-min.js"></script>
     <script src="app.js"></script>
     <script src="combinatorics.js"></script>
-    <script src="test.js"></script>
+    <script src="index.js"></script>
     <script src="ui.js"></script>
 
     <style>
@@ -42,11 +42,11 @@
                 </li>
                 <li>
                     Number of rowers per boat
-                        <input type="number" data-bind="value: rowersPerBoat"/>
+                        <input type="number" placeholder="Enter number of rowers" data-bind="value: rowersPerBoat"/>
                 </li>
                 <li>
                     Number of trips
-                        <input type="number" data-bind="value: numOfTrips"/>
+                        <input type="number" placeholder="Enter number of trips" data-bind="value: numOfTrips"/>
                 </li>
             </ul>
         </form>
@@ -65,12 +65,12 @@
         </div>
     </div>
 
-    <div data-role="view" id="add-member" data-title="Add member" data-show="addShow" data-init="addInit">
+    <div data-role="view" id="add-member" data-title="Add new member" data-show="addShow" data-init="addInit" data-after-show="afterShowAddOrEdit">
         <div data-role="header">
             <div data-role="navbar">
-                <a class="nav-button" data-align="left" data-role="backbutton" id="cancel">Cancel</a>
+                <a class="nav-button" data-align="left" data-role="button" id="add-member-delete">Delete</a>
                 <span data-role="view-title"></span>
-                <a class="nav-button" data-align="right" data-role="button" id="done">Done</a>
+                <a class="nav-button" data-align="right" data-role="button" id="add-member-done">Done</a>
             </div>
         </div>
         <form>
@@ -96,7 +96,7 @@
         <div data-role="header">
             <div data-role="navbar">
                 <span data-role="view-title"></span>
-                <a class="nav-button" data-align="right" data-role="button" href="#show-results">Done</a>
+                <a class="nav-button" data-align="right" data-role="button" href="#show-results?trip=0">Done</a>
             </div>
         </div>
         <ul data-role="listview" data-style="inset">
@@ -110,45 +110,15 @@
         </ul>
     </div>
 
-    <div data-role="view" id="show-results" data-title="Calculated trips" data-after-show="afterShowResults">
+    <div data-role="view" id="show-results" data-title="Calculated trips" data-init="initResults" data-show="showResults" data-after-show="afterShowResults">
         <div data-role="header">
             <div data-role="navbar">
+                <a class="nav-button" data-align="left" data-role="button" id="show-results-prev">Previous</a>
                 <span data-role="view-title"></span>
+                <a class="nav-button" data-align="right" data-role="button" id="show-results-next">Next</a>
             </div>
         </div>
-        <ul id="result-list-view" data-type="group" data-style="inset"></ul>
+        <ul id="result-list-view"/>
     </div>
-
-    <style>
-        .km-ios #listview-home .km-content {
-            background: url(../../content/shared/images/patterns/pattern2.png);
-            box-shadow: inset 0 0 30px #95764D;
-            -webkit-box-shadow: inset 0 0 30px #95764D;
-        }
-        .km-ios #listview-home .km-listview .km-list {
-            border-radius: 10px;
-            -webkit-border-radius: 10px;
-            box-shadow: 0 1px 5px #95764D;
-            -webkit-box-shadow: 0 1px 5px #95764D;
-        }
-        .km-ios #listview-home .km-listview .km-list > li {
-            border: none;
-        }
-        .km-ios #listview-home .km-listview .km-list > li:last-child {
-            -webkit-box-shadow: none;
-            box-shadow: none;
-        }
-        .km-ios #listview-home .km-navbar {
-            background: url(../../content/shared/images/patterns/pattern9.png);
-        }
-        .km-tablet .km-ios #listview-home .km-view-title {
-            color: #fff;
-            text-shadow: 0 -1px rgba(0,0,0,.5);
-        }
-        .km-ios #listview-home .km-navbar .km-button
-        {
-            background-color: #974d2e;
-        }
-    </style>
 </body>
 </html>

@@ -15,9 +15,11 @@ var globalParams = kendo.observable({
     numOfTrips: 4
 });
 
-var data = savedData.map(function (x) {
-    return kendo.observable(x);
+var observable = kendo.observable({
+    savedData: savedData
 });
+
+var data = observable.savedData;
 
 var editedMember = null;
 
@@ -26,6 +28,8 @@ window.onload = function () {
 };
 
 function addShow(e) {
+    var view = e.view;
+
     editedMember = null;
 
     if (e.view.params.uid !== undefined) {
@@ -45,7 +49,8 @@ function addShow(e) {
 
 function addInit(e) {
     var view = e.view;
-    view.element.find("#done").data("kendoMobileButton").bind("click", function () {
+
+    view.element.find("#add-member-done").data("kendoMobileButton").bind("click", function () {
         if (editedMember != null && editedMember.name != "") {
             if (editedMember.isNew) {
                 editedMember.isNew = false;
@@ -55,6 +60,41 @@ function addInit(e) {
             kendo.mobile.application.navigate("#:back");
         }
     });
+
+    view.element.find("#add-member-delete").data("kendoMobileButton").bind("click", function () {
+        if (editedMember != null) {
+            if (!editedMember.isNew) {
+                var index = -1;
+                var memberIndex = -1;
+                data.forEach(function (x) {
+                    index++;
+                    if (memberIndex == -1 && x.uid == editedMember.uid) {
+                        memberIndex = index;
+                    }
+                });
+
+                if (memberIndex > -1) {
+                    data.splice(memberIndex, 1);
+                }
+            }
+
+            editedMember = null;
+            kendo.mobile.application.navigate("#:back");
+        }
+    });
+}
+
+function afterShowAddOrEdit(e) {
+    var view = e.view;
+
+    if (view.params.uid !== undefined) {
+        var navbar = app.view()
+          .header
+          .find(".km-navbar")
+          .data("kendoMobileNavBar");
+
+        navbar.title("Edit member");
+    }
 }
 
 function setupTripShow(e) {
@@ -80,10 +120,48 @@ function beforeHideCalculation() {
     calculation.stop();
 }
 
-function afterShowResults() {
+function initResults(e) {
+    var view = e.view;
+    $("#show-results-prev").bind("click", function () {
+        var tripNo = parseInt(view.params.trip);
+
+        if (tripNo > 0) {
+            kendo.mobile.application.navigate("#show-results?trip=" + (tripNo - 1));
+        }
+    });
+
+    $("#show-results-next").bind("click", function () {
+        var tripNo = parseInt(view.params.trip);
+
+        if (tripNo < calculation.numberOfTrips) {
+            kendo.mobile.application.navigate("#show-results?trip=" + (tripNo + 1));
+        }
+    });
+}
+
+function showResults(e) {
+    var view = e.view;
+    var tripNo = parseInt(view.params.trip);
+
+    $("#show-results-prev").toggle(tripNo > 0);
+    $("#show-results-next").toggle(tripNo < calculation.numberOfTrips - 1);
+
     var element = document.getElementById("result-list-view");
     if (element != null) {
-        calculation.showResults(element);
-        $(element).kendoMobileListView({});
+        element.innerHTML = "";
+        calculation.showResults(tripNo, element);
+        $(element).kendoMobileListView({ type: 'group', style: 'inset'});
     }
+}
+
+function afterShowResults(e) {
+    var view = e.view;
+    var tripNo = parseInt(view.params.trip);
+
+    var navbar = app.view()
+      .header
+      .find(".km-navbar")
+      .data("kendoMobileNavBar");
+
+    navbar.title("Trip #" + (tripNo + 1));
 }

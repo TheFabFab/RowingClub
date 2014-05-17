@@ -33,6 +33,10 @@
         this._bestSchedule = null;
     }
 
+    get numberOfTrips(): number {
+        return this._numOfTrips;
+    }
+
     start() {
         this.generateNextSchedule();
     }
@@ -67,28 +71,19 @@
         schedule.drawDistributionMap(this._heatMap);
     }
 
-    showResults(element: HTMLUListElement) {
-        this._bestSchedule.trips.forEach((trip, tripIndex) => {
-            var tripHeader = document.createElement("li");
-            tripHeader.setAttribute("data-icon", "globe");
-            element.appendChild(tripHeader);
-            //tripHeader.innerText = "Trip #" + (tripIndex + 1);
-            tripHeader.appendChild(document.createTextNode("Trip #" + (tripIndex + 1)));
-            var tripList = document.createElement("ul");
-            tripHeader.appendChild(tripList);
+    showResults(tripNo: number, element: HTMLUListElement) {
+        var trip = this._bestSchedule.trips[tripNo];
 
-            trip.Boats.forEach(boat => {
-                var boatHeader = document.createElement("li");
-                boatHeader.setAttribute("data-icon", "globe");
-                tripList.appendChild(boatHeader);
-                boatHeader.appendChild(document.createTextNode("(C) " + boat.cox.name));
-                var boatList = document.createElement("ul");
-                boatHeader.appendChild(boatList);
-                boat.rowers.forEach(rower => {
-                    var rowerLine = document.createElement("li");
-                    boatList.appendChild(rowerLine);
-                    rowerLine.innerHTML = "<a>" + rower.name + "</a>";
-                });
+        trip.Boats.forEach(boat => {
+            var boatHeader = document.createElement("li");
+            element.appendChild(boatHeader);
+            boatHeader.appendChild(document.createTextNode("(C) " + boat.cox.name));
+            var boatList = document.createElement("ul");
+            boatHeader.appendChild(boatList);
+            boat.rowers.forEach(rower => {
+                var rowerLine = document.createElement("li");
+                boatList.appendChild(rowerLine);
+                rowerLine.innerHTML = "<a>" + rower.name + "</a>";
             });
         });
     }
