@@ -83,7 +83,7 @@
             boat.rowers.forEach(rower => {
                 var rowerLine = document.createElement("li");
                 boatList.appendChild(rowerLine);
-                rowerLine.innerHTML = "<a>" + rower.name + "</a>";
+                rowerLine.innerHTML = rower.name;
             });
         });
     }

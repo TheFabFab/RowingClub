@@ -122,19 +122,35 @@ function beforeHideCalculation() {
 
 function initResults(e) {
     var view = e.view;
-    $("#show-results-prev").bind("click", function () {
+
+    var navigateLeft = function () {
         var tripNo = parseInt(view.params.trip);
 
         if (tripNo > 0) {
             kendo.mobile.application.navigate("#show-results?trip=" + (tripNo - 1));
         }
-    });
+    };
 
-    $("#show-results-next").bind("click", function () {
+    var navigateRight = function () {
         var tripNo = parseInt(view.params.trip);
 
-        if (tripNo < calculation.numberOfTrips) {
+        if (tripNo < calculation.numberOfTrips - 1) {
             kendo.mobile.application.navigate("#show-results?trip=" + (tripNo + 1));
+        }
+    };
+
+    $("#show-results-prev").bind("click", navigateLeft);
+    $("#show-results-next").bind("click", navigateRight);
+
+    view.element.kendoTouch({
+        enableSwipe: true,
+        swipe: function (e) {
+            if (e.direction === "left") {
+                navigateRight();
+            }
+            else if (e.direction === "right") {
+                navigateLeft();
+            }
         }
     });
 }
@@ -164,4 +180,7 @@ function afterShowResults(e) {
       .data("kendoMobileNavBar");
 
     navbar.title("Trip #" + (tripNo + 1));
+}
+
+function swipeShowResults() {
 }
