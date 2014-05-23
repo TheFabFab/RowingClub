@@ -1,5 +1,6 @@
 ﻿var app = null;
 var calculation = null;
+
 var savedData = [
     { name: "A", canBeCox: true, canBeRower: true },
     { name: "B", canBeCox: true, canBeRower: true },
@@ -24,7 +25,16 @@ var data = observable.savedData;
 var editedMember = null;
 
 window.onload = function () {
-    app = new kendo.mobile.Application(document.body, { initial: "#setup-trip" });
+    var initialView = "#setup-trip";
+
+    if (typeof (Storage) !== "undefined") {
+        var params = localStorage.getItem("globalParam");
+        if (params !== null) {
+            initialView = "#setup-team";
+        }
+    }
+
+    app = new kendo.mobile.Application(document.body, { initial: initialView });
 };
 
 function addShow(e) {
@@ -145,12 +155,8 @@ function initResults(e) {
     view.element.kendoTouch({
         enableSwipe: true,
         swipe: function (e) {
-            if (e.direction === "left") {
-                navigateRight();
-            }
-            else if (e.direction === "right") {
-                navigateLeft();
-            }
+            if (e.direction === "left") navigateRight();
+            else if (e.direction === "right") navigateLeft();
         }
     });
 }
@@ -180,7 +186,4 @@ function afterShowResults(e) {
       .data("kendoMobileNavBar");
 
     navbar.title("Trip #" + (tripNo + 1));
-}
-
-function swipeShowResults() {
 }
